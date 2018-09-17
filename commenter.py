@@ -11,12 +11,23 @@ else:
 with open("image_list.json", "r") as f:
 	blackholed_urls = json.loads(f.read())
 
+# allow client secret and password to be set manually or by environment for automating
+try:
+	secret = os.environ["CLIENT_SECRET"]
+except KeyError:
+	secret = input("secret: ")
+
+try:
+	pw = os.environ["REDDIT_PASSWORD"]
+except KeyError:
+	pw = input("password: ")
+
 reddit = praw.Reddit(
 	client_id="0V1g_2X1ayVenw",
-	client_secret=input("secret: "),
+	client_secret=secret,
 	user_agent="unix:4x_jpeg_bot:alpha (by /u/4x_jpeg)",
 	username="4x_jpeg",
-	password=input("password: ")
+	password=pw
 )
 
 morejpeg_auto = reddit.redditor("morejpeg_auto")
@@ -24,7 +35,6 @@ morejpeg_auto = reddit.redditor("morejpeg_auto")
 try:
 	i = 0
 	for comment in morejpeg_auto.comments.new(limit=50):
-
 		for checked_comment in checked_comments:
 			if checked_comment["id"] == comment.id:
 				# if this happens previous comments will als have been checked, so we can
@@ -54,7 +64,9 @@ try:
 						# check if it was answered by u/morejpeg_auto
 						was_answered = False
 						for replyreply in reply.replies:
-							if replyreply.author.name == "morejpeg_auto":
+							if (replyreply.author.name == "morejpeg_auto" or
+								replyreply.author.name == "4x_jpeg"):
+								
 								was_answered = True
 								break
 						
