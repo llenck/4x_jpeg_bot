@@ -1,4 +1,4 @@
-import os, sys, praw, json
+import os, sys, praw, json, datetime
 import pprint as p
 
 
@@ -35,18 +35,29 @@ morejpeg_auto = reddit.redditor("morejpeg_auto")
 try:
 	i = 0
 	for comment in morejpeg_auto.comments.new(limit=50):
+		# no need to check already checked comments
+		skip = False
 		for checked_comment in checked_comments:
 			if checked_comment["id"] == comment.id:
-				# if this happens previous comments will already have been checked, so we can
-				# exit without missing out on stuff
-				print("\n\nStopping after %d, I already visited https://reddit.com%s" %
-					(i, comment.permalink))
-				exit(0)
+				skip = True
+				break
+		if skip:
+			continue
+
+		# if this comment is new and stuff might change, we need a way to tell 
+		# later parts of the code to not record this
+		too_early_to_skip = False
+
+		# don't skip next run if u/morejpeg_auto's comment is less than 2h old
+		if int(datetime.datetime.utcnow().timestamp()) < comment.created_utc + 7200:
+			too_early_to_skip = True
+
 
 		i += 1
 		sys.stdout.write("\rChecking: #%d" % i)
 		sys.stdout.flush()
 
+		# for the record, out of curiosity (lul)
 		answered_by_us = False
 
 		# something is broken with comment.replies if we don't do .refresh()
@@ -55,11 +66,17 @@ try:
 			comment.refresh()
 
 			for reply in comment.replies:
+				# don't answer if the comment is pretty new, we want to
+				# give u/morejpeg some time (at least 10min)
+				if int(datetime.datetime.utcnow().timestamp()) < reply.created_utc + 600:
+					too_early_to_skip = True
+					continue
+				
 				for line in iter(reply.body.splitlines()):
-					if "more" in line.lower() and "jpeg" in line.lower():
-						# don't answer if the comment is pretty new, we want to 
-						# give u/morejpeg some time (at least 30min)
-						# TODO
+					# if someone writes "morejpeg" they probably are just talking about
+					# the bot and not actually requesting more jpeg
+					if ("more" in line.lower() and "jpeg" in line.lower()
+						and not "morejpeg" in line.lower()):
 
 						# check if it was answered by u/morejpeg_auto
 						was_answered = False
@@ -77,12 +94,13 @@ try:
 								reply.reply(
 									">%s\n"
 									"\n"
-									"u/morejpeg_auto doesn't seem to answer you, so I'll help"
-									" out:\n"
+									"u/morejpeg_auto doesn't seem to answer you,"
+									" so I'll help out:\n"
 									"[Here you go!](%s)\n"
 									"\n\n\n"
 									"^^^I ^^^am ^^^a ^^^bot\n\n"
-									"[GitHub](https://github.com/Nunu-Willump/4x_jpeg_bot.git)"
+									"[GitHub]"
+									"(https://github.com/Nunu-Willump/4x_jpeg_bot.git)"
 									% (
 										line,
 
@@ -94,7 +112,7 @@ try:
 								)
 								answered_by_us = True
 						
-						# dont continue with this comment if the last line triggered the if
+						# dont continue with this reply if the last line triggered the if
 						continue
 
 		# something is wrong with the comment, and that won't change as we already called
@@ -105,9 +123,10 @@ try:
 		except praw.exceptions.ClientException:
 			pass
 
-		checked_comments.append({"id": comment.id,
-			"body": comment.body, "link": "https://reddit.com" + comment.permalink,
-			"Answered": answered_by_us})
+		if not too_early_to_skip:
+			checked_comments.append({"id": comment.id,
+				"body": comment.body, "link": "https://reddit.com" + comment.permalink,
+				"Answered": answered_by_us})
 
 except Exception as e:
 	sys.stdout.write("\n\nCaught %s." % repr(e))
