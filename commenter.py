@@ -37,7 +37,7 @@ try:
 	for comment in morejpeg_auto.comments.new(limit=50):
 		for checked_comment in checked_comments:
 			if checked_comment["id"] == comment.id:
-				# if this happens previous comments will als have been checked, so we can
+				# if this happens previous comments will already have been checked, so we can
 				# exit without missing out on stuff
 				print("\n\nStopping after %d, I already visited https://reddit.com%s" %
 					(i, comment.permalink))
