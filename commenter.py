@@ -34,7 +34,11 @@ morejpeg_auto = reddit.redditor("morejpeg_auto")
 
 try:
 	i = 0
-	for comment in morejpeg_auto.comments.new(limit=50):
+	for comment in morejpeg_auto.comments.new(limit=10):
+		i += 1
+		sys.stdout.write("\rChecking: #%d (%s)" % (i, comment.permalink))
+		sys.stdout.flush()
+
 		# no need to check already checked comments
 		skip = False
 		for checked_comment in checked_comments:
@@ -48,14 +52,10 @@ try:
 		# later parts of the code to not record this
 		too_early_to_skip = False
 
-		# don't skip next run if u/morejpeg_auto's comment is less than 2h old
-		if int(datetime.datetime.utcnow().timestamp()) < comment.created_utc + 7200:
+		# don't skip next run if u/morejpeg_auto's comment is less than 10h old
+		if int(datetime.datetime.utcnow().timestamp()) < comment.created_utc + 36000:
 			too_early_to_skip = True
 
-
-		i += 1
-		sys.stdout.write("\rChecking: #%d" % i)
-		sys.stdout.flush()
 
 		# for the record, out of curiosity (lul)
 		answered_by_us = False
@@ -75,8 +75,9 @@ try:
 				for line in iter(reply.body.splitlines()):
 					# if someone writes "morejpeg" they probably are just talking about
 					# the bot and not actually requesting more jpeg
-					if ("more" in line.lower() and "jpeg" in line.lower()
-						and not "morejpeg" in line.lower()):
+					if (("more" in line.lower() and "jpeg" in line.lower())
+						or ("needs" in line.lower() and "jpeg" in line.lower())
+						) and not "morejpeg" in line.lower():
 
 						# check if it was answered by u/morejpeg_auto
 						was_answered = False
@@ -88,30 +89,28 @@ try:
 								break
 						
 						if not was_answered:
-							if input("\nComment on https://reddit.com%s? [y/N]: "
-								% reply.permalink).lower() == "y":
+							reply.reply(
+								">%s\n"
+								"\n"
+								"u/morejpeg_auto doesn't seem to answer you,"
+								" so I'll help out:\n"
+								"[Here you go!](%s)\n"
+								"\n\n\n"
+								"^^^I ^^^am ^^^a ^^^bot\n\n"
+								"[GitHub]"
+								"(https://github.com/Nunu-Willump/4x_jpeg_bot.git)"
+								% (
+									line,
 
-								reply.reply(
-									">%s\n"
-									"\n"
-									"u/morejpeg_auto doesn't seem to answer you,"
-									" so I'll help out:\n"
-									"[Here you go!](%s)\n"
-									"\n\n\n"
-									"^^^I ^^^am ^^^a ^^^bot\n\n"
-									"[GitHub]"
-									"(https://github.com/Nunu-Willump/4x_jpeg_bot.git)"
-									% (
-										line,
-
-										# add number of checked comments to index
-										# to have it not repeat after each run
-										blackholed_urls[(i + len(checked_comments))
-											% len(blackholed_urls)]
-									)
+									# add number of checked comments to index
+									# to have it not repeat after each run
+									blackholed_urls[(i + len(checked_comments))
+										% len(blackholed_urls)]
 								)
-								answered_by_us = True
-						
+							)
+							answered_by_us = True
+							too_early_to_skip = False
+
 						# dont continue with this reply if the last line triggered the if
 						continue
 
