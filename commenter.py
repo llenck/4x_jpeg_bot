@@ -95,10 +95,14 @@ try:
 								"u/morejpeg_auto doesn't seem to answer you,"
 								" so I'll help out:\n"
 								"[Here you go!](%s)\n"
-								"\n\n\n"
-								"^^^I ^^^am ^^^a ^^^bot\n\n"
+								"\n"
+                                                                "\n"
+								"^^^I ^^^am ^^^a ^^^bot ^^^and ^^^I ^^^don't"
+                                                                " ^^^answer ^^^to ^^^replies\n"
+                                                                "\n"
 								"[GitHub]"
-								"(https://github.com/Nunu-Willump/4x_jpeg_bot.git)"
+								"(https://github.com/Nunu-Willump/4x_jpeg_bot.git)\n"
+                                                                ""
 								% (
 									line,
 
