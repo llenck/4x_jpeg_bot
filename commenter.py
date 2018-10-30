@@ -2,6 +2,13 @@ import os, sys, praw, json, datetime
 import pprint as p
 
 
+banned_subs = (
+	"SuicideWatch",
+	"depression",
+	"test", # would comment without being asked to because it replies to u/MarkdownShadowBot
+	"discordapp", # those fuckers banned me so no need to waste cpu time here
+)
+
 if not os.path.isfile("checked_comments.json"):
 	checked_comments = []
 else:
@@ -38,11 +45,19 @@ try:
 		i += 1
 		sys.stdout.write("\rChecking: #%d (%s)" % (i, comment.permalink))
 		sys.stdout.flush()
+		quit()
 
 		# no need to check already checked comments
 		skip = False
 		for checked_comment in checked_comments:
 			if checked_comment["id"] == comment.id:
+				skip = True
+				break
+		if skip:
+			continue
+
+		for sub in banned_subs:
+			if comment.subreddit.display_name == sub:
 				skip = True
 				break
 		if skip:
@@ -96,13 +111,13 @@ try:
 								" so I'll help out:\n"
 								"[Here you go!](%s)\n"
 								"\n"
-                                                                "\n"
+								"\n"
 								"^^^I ^^^am ^^^a ^^^bot ^^^and ^^^I ^^^don't"
-                                                                " ^^^answer ^^^to ^^^replies\n"
-                                                                "\n"
+								" ^^^answer ^^^to ^^^replies\n"
+								"\n"
 								"[GitHub]"
 								"(https://github.com/Nunu-Willump/4x_jpeg_bot.git)\n"
-                                                                ""
+								""
 								% (
 									line,
 
