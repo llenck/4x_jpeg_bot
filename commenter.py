@@ -45,7 +45,6 @@ try:
 		i += 1
 		sys.stdout.write("\rChecking: #%d (%s)" % (i, comment.permalink))
 		sys.stdout.flush()
-		quit()
 
 		# no need to check already checked comments
 		skip = False
