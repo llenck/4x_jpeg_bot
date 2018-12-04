@@ -111,7 +111,7 @@ try:
 								"[Here you go!](%s)\n"
 								"\n"
 								"\n"
-								"^^^(I am a bot and I don't answer to replies, though my master might.)\n"
+								"^(I am a bot and I don't answer to replies, though my master might.)\n"
 								"\n"
 								"While you're on the internet, please sub to PewDiePie und unsub from T-Series. It's a close battle by now :/\n"
 								"\n"
