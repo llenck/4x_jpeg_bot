@@ -1,5 +1,0 @@
-while :
-do
-	python commenter.py
-	sleep 15m
-done
